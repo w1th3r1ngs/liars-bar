@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liar's Bar</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+        }
+        #revolver {
+            width: 200px;
+            height: 200px;
+            border: 5px solid #000;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #ccc;
+        }
+        .chamber {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: gray;
+            border-radius: 50%;
+        }
+        .red {
+            background-color: red;
+        }
+        #chamber1 { top: 10px; left: 80px; }
+        #chamber2 { top: 50px; left: 130px; }
+        #chamber3 { top: 120px; left: 130px; }
+        #chamber4 { top: 160px; left: 80px; }
+        #chamber5 { top: 120px; left: 30px; }
+        #chamber6 { top: 50px; left: 30px; }
+        #message {
+            margin-top: 20px;
+            font-size: 24px;
+            color: red;
+            display: none;
+            text-transform: uppercase;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        #reset {
+            font-size: 14px;
+            background-color: #888;
+            color: white;
+        }
+        .dead {
+            border: 10px solid red;
+            background-color: #ffe6e6;
+        }
+    </style>
+</head>
+<body>
+    <div id="revolver">
+        <div id="chamber1" class="chamber red"></div>
+        <div id="chamber2" class="chamber"></div>
+        <div id="chamber3" class="chamber"></div>
+        <div id="chamber4" class="chamber"></div>
+        <div id="chamber5" class="chamber"></div>
+        <div id="chamber6" class="chamber"></div>
+    </div>
+    <button id="shoot">Выстрел</button>
+    <button id="reset">Сброс</button>
+    <div id="message">Ты умер!</div>
+
+    <script>
+        const chambers = document.querySelectorAll('.chamber');
+        const revolver = document.getElementById('revolver');
+        const message = document.getElementById('message');
+        const shootButton = document.getElementById('shoot');
+        const resetButton = document.getElementById('reset');
+
+        let bullets = 1; // Изначально 1 патрон
+        let maxBullets = 6; // Всего 6 патронов
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        function updateChambers() {
+            chambers.forEach((chamber, index) => {
+                if (index < bullets) {
+                    chamber.classList.add('red');
+                } else {
+                    chamber.classList.remove('red');
+                }
+            });
+        }
+
+        function handleShoot() {
+            if (bullets <= maxBullets) {
+                const chamberPosition = getRandomInt(6); // Случайная камора
+                console.log("Позиция патрона:", chamberPosition);
+
+                if (chamberPosition < bullets) {
+                    // Выстрел - игрок "умер"
+                    revolver.classList.add('dead');
+                    shootButton.disabled = true; // Блокировка кнопки "Выстрел"
+                    setTimeout(() => {
+                        message.style.display = 'block';
+                    }, 1000); // Задержка в 1 секунду
+                } else {
+                    // Увеличиваем количество патронов
