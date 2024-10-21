@@ -118,3 +118,24 @@
                     }, 1000); // Задержка в 1 секунду
                 } else {
                     // Увеличиваем количество патронов
+                    bullets++;
+                    updateChambers();
+                }
+            }
+        }
+
+        function handleReset() {
+            bullets = 1; // Сброс патронов
+            updateChambers();
+            message.style.display = 'none';
+            revolver.classList.remove('dead');
+            shootButton.disabled = false; // Включаем кнопку "Выстрел"
+        }
+
+        shootButton.addEventListener('click', handleShoot);
+        resetButton.addEventListener('click', handleReset);
+
+        updateChambers(); // Инициализация состояния камер
+    </script>
+</body>
+</html>
