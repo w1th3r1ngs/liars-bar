@@ -15,18 +15,31 @@
             font-family: Arial, sans-serif;
             background-color: #fff;
         }
+
+        /* Обводка для барабана */
+        #revolver-container {
+            position: relative;
+            width: 240px; /* Размер контейнера барабана */
+            height: 240px; /* Размер контейнера барабана */
+            border: 5px solid black; /* Обводка */
+            border-radius: 50%; /* Круглая форма */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Скрыть все, что выходит за пределы */
+        }
+
         #revolver {
             width: 200px;
             height: 200px;
-            border: 5px solid #000;
-            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             background-color: #ccc;
-            transition: transform 0.5s; /* Добавляем плавный переход для анимации вращения */
+            transition: transform 1s; /* Долгий переход для анимации */
         }
+
         .chamber {
             position: absolute;
             width: 40px;
@@ -34,15 +47,19 @@
             background-color: gray;
             border-radius: 50%;
         }
+
         .red {
             background-color: red;
         }
-        #chamber1 { top: 10px; left: 80px; }
-        #chamber2 { top: 50px; left: 130px; }
-        #chamber3 { top: 120px; left: 130px; }
-        #chamber4 { top: 160px; left: 80px; }
-        #chamber5 { top: 120px; left: 30px; }
-        #chamber6 { top: 50px; left: 30px; }
+
+        /* Позиционирование патронов по кругу */
+        #chamber1 { top: 0; left: 50%; transform: translate(-50%, -50%); }
+        #chamber2 { top: 50%; left: 100%; transform: translate(-100%, -50%); }
+        #chamber3 { bottom: 0; left: 50%; transform: translate(-50%, 50%); }
+        #chamber4 { top: 50%; left: 0; transform: translate(0, -50%); }
+        #chamber5 { top: 25%; left: 75%; transform: translate(-50%, -50%); }
+        #chamber6 { top: 25%; left: 25%; transform: translate(-50%, -50%); }
+
         #message {
             margin-top: 20px;
             font-size: 24px;
@@ -50,6 +67,7 @@
             display: none;
             text-transform: uppercase;
         }
+
         button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -57,11 +75,13 @@
             cursor: pointer;
             text-transform: uppercase;
         }
+
         #reset {
             font-size: 14px;
             background-color: #888;
             color: white;
         }
+
         .dead {
             border: 10px solid red;
             background-color: #ffe6e6;
@@ -69,13 +89,15 @@
     </style>
 </head>
 <body>
-    <div id="revolver">
-        <div id="chamber1" class="chamber red"></div>
-        <div id="chamber2" class="chamber"></div>
-        <div id="chamber3" class="chamber"></div>
-        <div id="chamber4" class="chamber"></div>
-        <div id="chamber5" class="chamber"></div>
-        <div id="chamber6" class="chamber"></div>
+    <div id="revolver-container">
+        <div id="revolver">
+            <div id="chamber1" class="chamber"></div>
+            <div id="chamber2" class="chamber"></div>
+            <div id="chamber3" class="chamber"></div>
+            <div id="chamber4" class="chamber"></div>
+            <div id="chamber5" class="chamber"></div>
+            <div id="chamber6" class="chamber"></div>
+        </div>
     </div>
     <button id="shoot">Выстрел</button>
     <button id="reset">Сброс</button>
@@ -106,8 +128,8 @@
         }
 
         function handleShoot() {
-            revolver.style.transition = 'transform 0.5s'; // Устанавливаем время анимации
-            revolver.style.transform = 'rotate(360deg)'; // Вращаем барабан
+            revolver.style.transition = 'transform 1s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Устанавливаем анимацию вращения
+            revolver.style.transform = 'rotate(720deg)'; // Вращаем барабан на 720 градусов
 
             setTimeout(() => {
                 const chamberPosition = getRandomInt(6); // Случайная камера
@@ -127,7 +149,7 @@
                 }
                 revolver.style.transition = ''; // Сбрасываем анимацию
                 revolver.style.transform = ''; // Сбрасываем поворот барабана
-            }, 500); // Время, на которое задерживаем проверку выстрела
+            }, 1000); // Время, на которое задерживаем проверку выстрела
         }
 
         function handleReset() {
