@@ -15,18 +15,18 @@
             font-family: Arial, sans-serif;
             background-color: #fff;
         }
+        
         #revolver {
             width: 200px;
             height: 200px;
-            border: 5px solid #000;
-            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             background-color: #ccc;
-            transition: transform 0.5s; /* Добавляем плавный переход для анимации вращения */
+            border-radius: 50%; /* Круглая форма для барабана */
         }
+
         .chamber {
             position: absolute;
             width: 40px;
@@ -34,15 +34,19 @@
             background-color: gray;
             border-radius: 50%;
         }
+
         .red {
             background-color: red;
         }
-        #chamber1 { top: 10px; left: 80px; }
-        #chamber2 { top: 50px; left: 130px; }
-        #chamber3 { top: 120px; left: 130px; }
-        #chamber4 { top: 160px; left: 80px; }
-        #chamber5 { top: 120px; left: 30px; }
-        #chamber6 { top: 50px; left: 30px; }
+
+        /* Позиционирование патронов по кругу */
+        #chamber1 { top: 0; left: 50%; transform: translate(-50%, -50%); } /* Верх */
+        #chamber2 { top: 50%; left: 100%; transform: translate(-100%, -50%); } /* Право */
+        #chamber3 { bottom: 0; left: 50%; transform: translate(-50%, 50%); } /* Низ */
+        #chamber4 { top: 50%; left: 0; transform: translate(0, -50%); } /* Лево */
+        #chamber5 { top: 25%; left: 75%; transform: translate(-50%, -50%); } /* Верхний правый */
+        #chamber6 { top: 25%; left: 25%; transform: translate(-50%, -50%); } /* Верхний левый */
+
         #message {
             margin-top: 20px;
             font-size: 24px;
@@ -50,6 +54,7 @@
             display: none;
             text-transform: uppercase;
         }
+
         button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -57,11 +62,13 @@
             cursor: pointer;
             text-transform: uppercase;
         }
+
         #reset {
             font-size: 14px;
             background-color: #888;
             color: white;
         }
+
         .dead {
             border: 10px solid red;
             background-color: #ffe6e6;
@@ -70,7 +77,7 @@
 </head>
 <body>
     <div id="revolver">
-        <div id="chamber1" class="chamber red"></div>
+        <div id="chamber1" class="chamber"></div>
         <div id="chamber2" class="chamber"></div>
         <div id="chamber3" class="chamber"></div>
         <div id="chamber4" class="chamber"></div>
@@ -106,28 +113,21 @@
         }
 
         function handleShoot() {
-            revolver.style.transition = 'transform 0.5s'; // Устанавливаем время анимации
-            revolver.style.transform = 'rotate(360deg)'; // Вращаем барабан
+            const chamberPosition = getRandomInt(6); // Случайная камера
+            console.log("Позиция патрона:", chamberPosition);
 
-            setTimeout(() => {
-                const chamberPosition = getRandomInt(6); // Случайная камера
-                console.log("Позиция патрона:", chamberPosition);
-
-                if (chamberPosition < bullets) {
-                    // Выстрел - игрок "умер"
-                    revolver.classList.add('dead');
-                    shootButton.disabled = true; // Блокировка кнопки "Выстрел"
-                    setTimeout(() => {
-                        message.style.display = 'block';
-                    }, 1000); // Задержка в 1 секунду
-                } else {
-                    // Увеличиваем количество патронов
-                    bullets++;
-                    updateChambers();
-                }
-                revolver.style.transition = ''; // Сбрасываем анимацию
-                revolver.style.transform = ''; // Сбрасываем поворот барабана
-            }, 500); // Время, на которое задерживаем проверку выстрела
+            if (chamberPosition < bullets) {
+                // Выстрел - игрок "умер"
+                revolver.classList.add('dead');
+                shootButton.disabled = true; // Блокировка кнопки "Выстрел"
+                setTimeout(() => {
+                    message.style.display = 'block';
+                }, 1000); // Задержка в 1 секунду
+            } else {
+                // Увеличиваем количество патронов
+                bullets++;
+                updateChambers();
+            }
         }
 
         function handleReset() {
