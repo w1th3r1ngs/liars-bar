@@ -25,6 +25,7 @@
             align-items: center;
             position: relative;
             background-color: #ccc;
+            transition: transform 0.5s; /* Добавляем плавный переход для анимации вращения */
         }
         .chamber {
             position: absolute;
@@ -105,8 +106,11 @@
         }
 
         function handleShoot() {
-            if (bullets <= maxBullets) {
-                const chamberPosition = getRandomInt(6); // Случайная камора
+            revolver.style.transition = 'transform 0.5s'; // Устанавливаем время анимации
+            revolver.style.transform = 'rotate(360deg)'; // Вращаем барабан
+
+            setTimeout(() => {
+                const chamberPosition = getRandomInt(6); // Случайная камера
                 console.log("Позиция патрона:", chamberPosition);
 
                 if (chamberPosition < bullets) {
@@ -121,7 +125,9 @@
                     bullets++;
                     updateChambers();
                 }
-            }
+                revolver.style.transition = ''; // Сбрасываем анимацию
+                revolver.style.transform = ''; // Сбрасываем поворот барабана
+            }, 500); // Время, на которое задерживаем проверку выстрела
         }
 
         function handleReset() {
