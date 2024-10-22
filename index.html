@@ -25,6 +25,7 @@
             align-items: center;
             position: relative;
             background-color: #ccc;
+            transition: transform 1s ease-out;
         }
         .chamber {
             position: absolute;
@@ -35,6 +36,15 @@
         }
         .red {
             background-color: red;
+        }
+        #pointer {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid black;
+            position: absolute;
+            top: -30px;
         }
         #message {
             margin-top: 20px;
@@ -63,6 +73,7 @@
 </head>
 <body>
     <div id="revolver">
+        <div id="pointer"></div>
         <div id="chamber1" class="chamber"></div>
         <div id="chamber2" class="chamber"></div>
         <div id="chamber3" class="chamber"></div>
@@ -80,23 +91,23 @@
         const message = document.getElementById('message');
         const shootButton = document.getElementById('shoot');
         const resetButton = document.getElementById('reset');
+        const pointer = document.getElementById('pointer');
 
         let bullets = 1; // Изначально 1 патрон
         let maxBullets = 6; // Всего 6 патронов
+        let rotation = 0;
 
-        // Функция для случайного числа
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
         }
 
-        // Обновление позиции камер по кругу
         function updateChambersPosition() {
-            const revolverRadius = 70; // Уменьшенный радиус барабана
-            const centerX = 100; // Центр круга по X
-            const centerY = 100; // Центр круга по Y
+            const revolverRadius = 70; // Радиус барабана
+            const centerX = 100;
+            const centerY = 100;
 
             chambers.forEach((chamber, index) => {
-                const angle = (index / chambers.length) * 2 * Math.PI; // Угол для каждой камеры
+                const angle = (index / chambers.length) * 2 * Math.PI;
                 const x = centerX + revolverRadius * Math.cos(angle) - chamber.offsetWidth / 2;
                 const y = centerY + revolverRadius * Math.sin(angle) - chamber.offsetHeight / 2;
                 chamber.style.left = `${x}px`;
@@ -114,37 +125,53 @@
             });
         }
 
+        function spinRevolver() {
+            let speed = 10; // Начальная скорость вращения
+            const interval = setInterval(() => {
+                speed *= 0.95; // Постепенное замедление
+                rotation += speed;
+                revolver.style.transform = `rotate(${rotation}deg)`;
+
+                if (speed < 0.1) {
+                    clearInterval(interval);
+                    checkIfDead();
+                }
+            }, 50);
+        }
+
+        function checkIfDead() {
+            const currentChamberIndex = Math.floor(((rotation / 360) % 1) * chambers.length);
+            console.log("Текущая камера:", currentChamberIndex);
+
+            if (currentChamberIndex === 0 && chambers[currentChamberIndex].classList.contains('red')) {
+                revolver.classList.add('dead');
+                shootButton.disabled = true;
+                setTimeout(() => {
+                    message.style.display = 'block';
+                }, 1000);
+            } else {
+                bullets++;
+                alert(`ВЫСТРЕЛА НЕ БЫЛО. ШАНС: ${bullets}/6`);
+                updateChambers();
+            }
+        }
+
         shootButton.addEventListener('click', () => {
             if (bullets <= maxBullets) {
-                const chamberPosition = getRandomInt(6); // Случайная камера
-                console.log("Позиция патрона:", chamberPosition);
-
-                if (chamberPosition < bullets) {
-                    // Выстрел - игрок "умер"
-                    revolver.classList.add('dead');
-                    shootButton.disabled = true; // Блокировка кнопки "Выстрел"
-                    setTimeout(() => {
-                        message.style.display = 'block';
-                    }, 1000); // Задержка в 1 секунду
-                } else {
-                    // Увеличиваем количество патронов
-                    bullets++;
-                    alert(`ВЫСТРЕЛА НЕ БЫЛО. ШАНС: ${bullets}/6`);
-                    updateChambers(); // Обновление отображения патронов
-                }
+                spinRevolver();
             }
         });
 
         resetButton.addEventListener('click', () => {
-            // Сброс игры
             bullets = 1;
-            updateChambers(); // Сбрасываем пазы
+            updateChambers();
             revolver.classList.remove('dead');
             message.style.display = 'none';
             shootButton.disabled = false;
+            rotation = 0;
+            revolver.style.transform = `rotate(0deg)`;
         });
 
-        // Начальная установка патронов и позиций
         updateChambersPosition();
         updateChambers();
     </script>
