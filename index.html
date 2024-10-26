@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Револьвер</title>
+    <title>Liar's Bar</title>
     <style>
         body {
             display: flex;
@@ -15,6 +15,11 @@
             font-family: Arial, sans-serif;
             background-color: #fff;
         }
+        #revolver-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         #revolver {
             width: 200px;
             height: 200px;
@@ -25,33 +30,33 @@
             align-items: center;
             position: relative;
             background-color: #ccc;
+            margin-top: 10px;
         }
         .chamber {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             background-color: gray;
             border-radius: 50%;
         }
-        .red {
+        .active {
             background-color: red;
         }
-        #pointer {
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid black;
-            position: absolute;
-            top: 90px;
-            left: 180px;
+        #shot-counter {
+            font-size: 24px;
+            color: black;
         }
-        #message {
+        #message, #no-shot-message {
             margin-top: 20px;
             font-size: 24px;
-            color: red;
             display: none;
             text-transform: uppercase;
+        }
+        #message {
+            color: red;
+        }
+        #no-shot-message {
+            color: black;
         }
         button {
             margin-top: 20px;
@@ -72,117 +77,100 @@
     </style>
 </head>
 <body>
-    <div id="revolver">
-        <div id="pointer"></div>
-        <div id="chamber1" class="chamber"></div>
-        <div id="chamber2" class="chamber"></div>
-        <div id="chamber3" class="chamber"></div>
-        <div id="chamber4" class="chamber"></div>
-        <div id="chamber5" class="chamber"></div>
-        <div id="chamber6" class="chamber"></div>
+    <div id="revolver-container">
+        <div id="shot-counter">0 / 6</div>
+        <div id="revolver">
+            <div id="chamber1" class="chamber" style="top: 15%; left: 50%; transform: translate(-50%, -50%);"></div>
+            <div id="chamber2" class="chamber" style="top: 35%; left: 85%; transform: translate(-50%, -50%);"></div>
+            <div id="chamber3" class="chamber" style="top: 65%; left: 85%; transform: translate(-50%, -50%);"></div>
+            <div id="chamber4" class="chamber" style="top: 85%; left: 50%; transform: translate(-50%, -50%);"></div>
+            <div id="chamber5" class="chamber" style="top: 65%; left: 15%; transform: translate(-50%, -50%);"></div>
+            <div id="chamber6" class="chamber" style="top: 35%; left: 15%; transform: translate(-50%, -50%);"></div>
+        </div>
     </div>
     <button id="shoot">Выстрел</button>
     <button id="reset">Сброс</button>
     <div id="message">Ты умер!</div>
+    <div id="no-shot-message">Выстрела не было</div>
+
+    <!-- Звуковые файлы -->
+    <audio id="click-sound" src="click.mp3"></audio>
+    <audio id="shot-sound" src="shot.mp3"></audio>
 
     <script>
         const chambers = document.querySelectorAll('.chamber');
         const revolver = document.getElementById('revolver');
         const message = document.getElementById('message');
+        const noShotMessage = document.getElementById('no-shot-message');
         const shootButton = document.getElementById('shoot');
         const resetButton = document.getElementById('reset');
-        const pointer = document.getElementById('pointer');
+        const shotCounter = document.getElementById('shot-counter');
+        const clickSound = document.getElementById('click-sound');
+        const shotSound = document.getElementById('shot-sound');
 
-        let bullets = 1; // Изначально 1 патрон
-        let maxBullets = 6; // Всего 6 патронов
-        let currentChamber = 0;
-        let isShooting = false;
+        let currentShot = 0;
+        let fatalShot;
 
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
         }
 
-        function updateChambersPosition() {
-            const revolverRadius = 70; // Радиус барабана
-            const centerX = 100;
-            const centerY = 100;
+        function setFatalShot() {
+            fatalShot = getRandomInt(6); // Случайный "убивающий" выстрел от 0 до 5
+            console.log("Смертельный выстрел будет на позиции:", fatalShot + 1); // Для отладки
+        }
 
+        function updateChamberHighlight() {
             chambers.forEach((chamber, index) => {
-                const angle = (index / chambers.length) * 2 * Math.PI;
-                const x = centerX + revolverRadius * Math.cos(angle) - chamber.offsetWidth / 2;
-                const y = centerY + revolverRadius * Math.sin(angle) - chamber.offsetHeight / 2;
-                chamber.style.left = `${x}px`;
-                chamber.style.top = `${y}px`;
+                chamber.classList.toggle('active', index === currentShot);
             });
         }
 
-        function updateChambers() {
-            chambers.forEach((chamber, index) => {
-                chamber.classList.remove('red');
-                if (index === currentChamber) {
-                    chamber.classList.add('red');
-                }
-            });
-        }
-
-        function spinRevolver(resultChamber) {
-            let speed = 100; // Начальная скорость (мс между сменой камер)
-            let rotations = 5; // Количество полных оборотов
-            let steps = rotations * chambers.length + resultChamber; // Количество шагов до остановки
-
-            const interval = setInterval(() => {
-                if (steps <= 0) {
-                    clearInterval(interval);
-                    checkIfDead();
-                    return;
-                }
-
-                currentChamber = (currentChamber + 1) % chambers.length;
-                updateChambers();
-                steps--;
-
-                if (steps < chambers.length) {
-                    speed += 10; // Замедляем анимацию на последних шагах
-                }
-
-                setTimeout(() => clearInterval(interval), speed); 
-            }, speed);
-        }
-
-        function checkIfDead() {
-            if (currentChamber === 0) {
-                // Если камера красная — игрок "умер"
-                revolver.classList.add('dead');
-                shootButton.disabled = true;
-                setTimeout(() => {
-                    message.style.display = 'block';
-                }, 1000);
-            } else {
-                bullets++;
-                alert(`ВЫСТРЕЛА НЕ БЫЛО. ШАНС: ${bullets}/6`);
-            }
+        function updateShotCounter() {
+            shotCounter.textContent = `${currentShot + 1} / 6`;
         }
 
         shootButton.addEventListener('click', () => {
-            if (bullets <= maxBullets && !isShooting) {
-                isShooting = true;
-                const resultChamber = getRandomInt(chambers.length); // Определяем результат
-                spinRevolver(resultChamber); // Запускаем вращение
-            }
+            shootButton.disabled = true; // Блокируем кнопку на время задержки
+
+            setTimeout(() => {
+                if (currentShot === fatalShot) {
+                    // Звук выстрела
+                    shotSound.play();
+                    
+                    // Игрок "умер"
+                    revolver.classList.add('dead');
+                    message.style.display = 'block';
+                } else {
+                    // Звук щелчка
+                    clickSound.play();
+
+                    noShotMessage.style.display = 'block'; // Показываем надпись "Выстрела не было"
+                    setTimeout(() => noShotMessage.style.display = 'none', 2000); // Прячем надпись через 2 секунды
+
+                    currentShot++;
+                    updateChamberHighlight();
+                    updateShotCounter();
+                }
+                shootButton.disabled = false; // Разблокируем кнопку
+            }, 5000); // Задержка 5 секунд
         });
 
         resetButton.addEventListener('click', () => {
-            bullets = 1;
-            isShooting = false;
-            currentChamber = 0;
-            updateChambers();
+            // Сброс игры
+            currentShot = 0;
+            setFatalShot();
             revolver.classList.remove('dead');
             message.style.display = 'none';
             shootButton.disabled = false;
+            updateChamberHighlight();
+            updateShotCounter();
         });
 
-        updateChambersPosition();
-        updateChambers();
+        // Установка начального "убивающего" выстрела при загрузке страницы
+        setFatalShot();
+        updateChamberHighlight();
+        updateShotCounter();
     </script>
 </body>
 </html>
